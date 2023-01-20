@@ -19,6 +19,9 @@
     - valida se o char termina (se existe um par de `'`)
   - identifica string
     - validade se a string termina (se existe um par de `"`)
+- comentário
+  - linha simples
+  - bloco
 
 ---
 
@@ -30,8 +33,5 @@ Para encontrar um elemento nesse vetor de tuplas, é utilizado `busca binária` 
 
 ## O que falta?
 
-- identificar comentários
-  - com `//`
-  - com `/**/`
 - validar erros nos identificadores
 - validar errors nos numeros

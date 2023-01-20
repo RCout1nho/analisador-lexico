@@ -11,6 +11,12 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define NUM_INT "NUM_INT"     // numero
+#define NUM_FLOAT "NUM_FLOAT" // numero.numero
+#define CARACTER "CARACTER"   // 'c'
+#define STRING "STRING"       // "string"
+#define ID "ID"               // identificador
+
 typedef struct Token
 {
     char *type;
@@ -95,12 +101,6 @@ const Token tokens_sinais_pontuacao[] = {
     {"SP_CHV_A", "{"},
     {"SP_CHV_F", "}"},
 };
-
-#define NUM_INT "NUM_INT"     // numero
-#define NUM_FLOAT "NUM_FLOAT" // numero.numero
-#define CARACTER "CARACTER"   // 'c'
-#define STRING "STRING"       // "string"
-#define ID "ID"               // identificador
 
 int binary_search(const Token array[], int size, const char *target)
 {
@@ -205,19 +205,22 @@ Token analex(char ch, FILE *file)
         int i = 0;
         bool is_float = false;
         bool is_valid = true;
-        char *error = malloc(sizeof(char)*100);
+        char *error = malloc(sizeof(char) * 100);
         do
         {
             lexema[i++] = ch;
-            if(isalpha(ch)){
+            if (isalpha(ch))
+            {
                 is_valid = false;
                 error = "ERROR: um tipo numérico não pode conter letras";
                 break;
             }
             if (ch == '.')
             {
-                if(!is_float) is_float = true;
-                else {
+                if (!is_float)
+                    is_float = true;
+                else
+                {
                     is_valid = false;
                     error = "ERROR: um tipo numérico não pode conter mais de um ponto";
                     break;
@@ -225,15 +228,19 @@ Token analex(char ch, FILE *file)
             }
 
         } while ((ch = prox_char(file)) != EOF && (isdigit(ch) || isalpha(ch) || ch == '.'));
-        
+
         lexema[i] = '\0';
 
-        if(is_valid) {
+        if (is_valid)
+        {
             ungetc(ch, file);
-            if(is_float) {
+            if (is_float)
+            {
                 Token token = {NUM_FLOAT, lexema};
                 return token;
-            } else {
+            }
+            else
+            {
                 Token token = {NUM_INT, lexema};
                 return token;
             }
@@ -246,12 +253,68 @@ Token analex(char ch, FILE *file)
         // reconhece os operadores
         char *lexema = malloc(sizeof(char));
         int i = 0;
+        bool is_simple_line_comment = false;
+        bool is_block_comment = false;
         do
         {
+            if (i >= 1)
+            {
+
+                if (lexema[i - 1] == '/' && ch == '/')
+                {
+                    is_simple_line_comment = true;
+                    break;
+                }
+                else if (lexema[i - 1] == '/' && ch == '*')
+                {
+                    is_block_comment = true;
+                    break;
+                }
+                if (ch == '/' || ch == '*')
+                {
+                    int index = is_operador(parse_char_to_string(lexema[i-1]));
+                    ungetc(ch, file);
+
+                    if (index != -1)
+                    {
+                        Token token = {tokens_operadores[index].type, lexema};
+                        return token;
+                    }
+                }
+            }
             lexema[i++] = ch;
-        } while ((ch = prox_char(file)) != EOF && (is_operador_simples(&ch) != -1));
+        } while ((ch = prox_char(file)) != EOF && (is_operador_simples(parse_char_to_string(ch)) != -1));
         ungetc(ch, file);
         lexema[i] = '\0';
+        if (is_simple_line_comment)
+        {
+            do
+            {
+                ch = prox_char(file);
+                // skiping line
+            } while (ch != '\n' && ch != EOF);
+            Token token = {"SKIP", " "};
+            return token;
+        }
+
+        if(is_block_comment){
+            do
+            {
+                ch = prox_char(file);
+                if(ch == '*'){
+                    ch = prox_char(file);
+                    if(ch == '/'){
+                        Token token = {"SKIP", ""};
+                        return token;
+                    }
+                    else ungetc(ch, file);   
+                }
+                // skiping block
+            } while (ch != EOF);   
+            Token token = {"ERRO: Comentário de block sem fim", ""};
+            return token;         
+        }
+        printf("depois do block comment\n");
 
         int index = is_operador(lexema);
 
@@ -261,7 +324,7 @@ Token analex(char ch, FILE *file)
             return token;
         }
 
-        Token token = {"ERROR", lexema};
+        Token token = {"ERRO: operador", lexema};
         return token;
     }
     else if (ch == '\'')
@@ -343,7 +406,7 @@ int main(int argc, char **argv)
     {
         ch = prox_char(file);
         Token token = analex(ch, file);
-        if (strcmp(token.type, "SKIP") != 0 )
+        if (strcmp(token.type, "SKIP") != 0)
         {
             grava_token(token.type, token.lexema);
         }
