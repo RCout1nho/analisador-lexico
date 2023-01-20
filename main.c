@@ -11,16 +11,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "./res/color/color.h"
 #include "./res/token/token.h"
 #include "./res/utils/utils.h"
-#include "./res/color/color.h"
 
 char prox_char(FILE *file) { return fgetc(file); }
 
-void grava_token(const char *tipo, char *lexema, bool error) { 
-    if(error){
+void grava_token_beautify(const char *tipo, char *lexema, bool error) {
+    if (error) {
         set_color_red();
-    }else{
+    } else {
         set_color_green();
     }
     printf("%s\t", tipo);
@@ -37,6 +37,10 @@ void grava_token(const char *tipo, char *lexema, bool error) {
     printf(">\n");
 
     set_color_reset();
+}
+
+void grava_token(const char *tipo, char *lexema, bool error) {
+    printf("%s\t %s\n", tipo, lexema);
 }
 
 bool is_skip_char(char ch) { return ch == ' ' || ch == '\t' || ch == '\n' || ch == EOF; }
@@ -84,8 +88,7 @@ tupla_token_t analex(char ch, FILE *file) {
                     is_float = true;
                 else {
                     is_valid = false;
-                    error =
-                        ERROR_NUMERIC_TYPE_CANNOT_HAVE_MORE_THAN_ONE_POINT;
+                    error = ERROR_NUMERIC_TYPE_CANNOT_HAVE_MORE_THAN_ONE_POINT;
                     break;
                 }
             }
@@ -172,13 +175,11 @@ tupla_token_t analex(char ch, FILE *file) {
         do {
             lexema[i++] = ch;
             if (i > 1 && ch == '\'') {
-                printf("tem par\n");
                 tem_par = true;
                 break;
             }
         } while ((ch = prox_char(file)) != EOF);
         lexema[i] = '\0';
-        printf("lexema: %s", lexema);
 
         if (!tem_par) {
             return build_token_with_error(ERROR_INCOMPLETE_CHAR, lexema);
@@ -217,6 +218,7 @@ tupla_token_t analex(char ch, FILE *file) {
 
 int main(int argc, char **argv) {
     FILE *file = fopen(argv[1], "r");
+    int beautify_output = atoi(argv[2]);
 
     char ch;
 
@@ -224,7 +226,11 @@ int main(int argc, char **argv) {
         ch = prox_char(file);
         tupla_token_t token = analex(ch, file);
         if (strcmp(token.tipo, SKIP) != 0) {
-            grava_token(token.tipo, token.lexema, token.error);
+            if (beautify_output) {
+                grava_token_beautify(token.tipo, token.lexema, token.error);
+            } else {
+                grava_token(token.tipo, token.lexema, token.error);
+            }
         }
     } while (ch != EOF);
     fclose(file);
