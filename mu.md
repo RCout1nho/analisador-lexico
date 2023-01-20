@@ -1,4 +1,6 @@
-# Reconhece
+# Manual do Usuário
+
+## O que reconhece?
 
 - identficadores
   - iniciando com letras
@@ -27,9 +29,11 @@
 
 ## Detalhes
 
-Os tokens são agrupados de forma ordenada em `tuplas` estruturadas por um vetor de structs do tipo `token`.
+Os tokens são agrupados de forma `ordenada` em `tuplas` estruturadas por um vetor de structs do tipo `token`.
 
 Para encontrar um elemento nesse vetor de tuplas, é utilizado `busca binária` para garantir um desempenho superior à uma `busca sequencial` simples.
+
+---
 
 ## O que falta?
 
