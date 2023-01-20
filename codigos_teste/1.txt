@@ -1,0 +1,16 @@
+/*
+ * Esse é um código de teste
+ */
+
+int main (){
+
+    int a = 10;
+    int b = 20;
+    int c = a + b;
+    // esse é um comentário de linha única
+
+    char x = 'x';
+    char *y = "yyy";
+
+    return 0;
+}

@@ -1,0 +1,1 @@
+char *parse_char_to_string(char chr);
