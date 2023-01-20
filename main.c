@@ -11,9 +11,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "./res/color/color.h"
-#include "./res/token/token.h"
-#include "./res/utils/utils.h"
+#include "./lib/color/color.h"
+#include "./lib/token/token.h"
+#include "./lib/utils/utils.h"
 
 char prox_char(FILE *file) { return fgetc(file); }
 
