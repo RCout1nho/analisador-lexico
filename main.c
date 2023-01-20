@@ -185,7 +185,7 @@ Token analex(char ch, FILE *file)
         {
             lexema[i++] = ch;
         } while ((ch = prox_char(file)) != EOF && (isalpha(ch) || isdigit(ch) || ch == '_'));
-        // ungetc(ch, file);
+        ungetc(ch, file);
         lexema[i] = '\0';
 
         int index = is_palavra_reservada(lexema);
@@ -209,12 +209,12 @@ Token analex(char ch, FILE *file)
         {
             lexema[i++] = ch;
         } while ((ch = prox_char(file)) != EOF && isdigit(ch));
-        // ungetc(ch, file);
+        ungetc(ch, file);
         lexema[i] = '\0';
         Token token = {NUM_INT, lexema};
         return token;
     }
-    else if (is_operador_simples(&ch) != -1)
+    else if (is_operador_simples(parse_char_to_string(ch)) != -1)
     {
         // reconhece os operadores
         char *lexema = malloc(sizeof(char));
@@ -292,8 +292,6 @@ Token analex(char ch, FILE *file)
         Token token = {tokens_sinais_pontuacao[is_sinal_pontuacao(lexema)].type, lexema};
         return token;
     }
-
-    // printf("--> '%c' is_sinal: %d\n", ch, is_sinal_pontuacao(&ch));
 
     Token token = {"SKIP", " "};
     return token;
