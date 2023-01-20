@@ -10,8 +10,6 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
-// #include "tokens/tokens_enum.h"
-// #include "tokens/operadores.h"
 
 typedef struct Token
 {
@@ -151,10 +149,11 @@ int is_sinal_pontuacao(char *lexema)
     return binary_search(tokens_sinais_pontuacao, sizeof(tokens_sinais_pontuacao) / sizeof(tokens_sinais_pontuacao[0]), lexema);
 }
 
-char *parse_char_to_string(char x) {
+char *parse_char_to_string(char x)
+{
     char buffer[2];
     sprintf(buffer, "%c", x);
-    char *result = malloc(sizeof(char)*2);
+    char *result = malloc(sizeof(char) * 2);
     strncpy(result, buffer, 2);
     return result;
 }
@@ -171,11 +170,11 @@ void grava_token(const char *token, char *lexema)
 
 Token analex(char ch, FILE *file)
 {
-    // if (ch == ' ' || ch == '\t' || ch == '\n')
-    // {
-    //     Token token = {"ESPACO", " "};
-    //     return token;
-    // }
+    if (ch == ' ' || ch == '\t' || ch == '\n' || ch == EOF)
+    {
+        Token token = {"SKIP", " "};
+        return token;
+    }
     if (isalpha(ch) || ch == '_' || ch == '$')
     {
         // reconehce se começar com letra ou _ ou $
@@ -201,17 +200,45 @@ Token analex(char ch, FILE *file)
     }
     else if (isdigit(ch))
     {
-        // reconhece: inteiro
-        // falta reconhecer: float
+        // reconhece: inteiro, float
         char *lexema = malloc(sizeof(char));
         int i = 0;
+        bool is_float = false;
+        bool is_valid = true;
+        char *error = malloc(sizeof(char)*100);
         do
         {
             lexema[i++] = ch;
-        } while ((ch = prox_char(file)) != EOF && isdigit(ch));
-        ungetc(ch, file);
+            if(isalpha(ch)){
+                is_valid = false;
+                error = "ERROR: um tipo numérico não pode conter letras";
+                break;
+            }
+            if (ch == '.')
+            {
+                if(!is_float) is_float = true;
+                else {
+                    is_valid = false;
+                    error = "ERROR: um tipo numérico não pode conter mais de um ponto";
+                    break;
+                }
+            }
+
+        } while ((ch = prox_char(file)) != EOF && (isdigit(ch) || isalpha(ch) || ch == '.'));
+        
         lexema[i] = '\0';
-        Token token = {NUM_INT, lexema};
+
+        if(is_valid) {
+            ungetc(ch, file);
+            if(is_float) {
+                Token token = {NUM_FLOAT, lexema};
+                return token;
+            } else {
+                Token token = {NUM_INT, lexema};
+                return token;
+            }
+        }
+        Token token = {error, lexema};
         return token;
     }
     else if (is_operador_simples(parse_char_to_string(ch)) != -1)
@@ -246,24 +273,29 @@ Token analex(char ch, FILE *file)
         do
         {
             lexema[i++] = ch;
-            if(i > 1 && ch == '\'' ) {
+            if (i > 1 && ch == '\'')
+            {
                 tem_par = true;
                 break;
             }
         } while ((ch = prox_char(file)) != EOF);
         // ungetc(ch, file);
         lexema[i] = '\0';
-        if(i <= 3){
+        if (i <= 3)
+        {
             Token token = {CARACTER, lexema};
             return token;
         }
-        if(!tem_par){
+        if (!tem_par)
+        {
             Token token = {"ERRO: char incompleto", lexema};
             return token;
         }
         Token token = {"ERRO: char maior que o permitido", lexema};
         return token;
-    }else if(ch == '"'){
+    }
+    else if (ch == '"')
+    {
         // reconhece string
         char *lexema = malloc(sizeof(char));
         int i = 0;
@@ -271,21 +303,25 @@ Token analex(char ch, FILE *file)
         do
         {
             lexema[i++] = ch;
-            if(i > 1 && ch == '"' ) {
+            if (i > 1 && ch == '"')
+            {
                 tem_par = true;
                 break;
             }
         } while ((ch = prox_char(file)) != EOF);
         // ungetc(ch, file);
         lexema[i] = '\0';
-        if(!tem_par){
+        if (!tem_par)
+        {
             Token token = {"ERRO: string incompleta", lexema};
             return token;
         }
 
         Token token = {STRING, lexema};
         return token;
-    }else if(is_sinal_pontuacao(parse_char_to_string(ch)) != -1){
+    }
+    else if (is_sinal_pontuacao(parse_char_to_string(ch)) != -1)
+    {
         char *lexema = malloc(sizeof(char));
         lexema[0] = ch;
         // ungetc(ch, file);
@@ -293,7 +329,7 @@ Token analex(char ch, FILE *file)
         return token;
     }
 
-    Token token = {"SKIP", " "};
+    Token token = {"ERRO: Caracter não reconhecido", parse_char_to_string(ch)};
     return token;
 }
 
@@ -307,12 +343,10 @@ int main(int argc, char **argv)
     {
         ch = prox_char(file);
         Token token = analex(ch, file);
-        if (strcmp(token.type, "ESPACO") != 0 && strcmp(token.type, "SKIP") != 0)
+        if (strcmp(token.type, "SKIP") != 0 )
         {
             grava_token(token.type, token.lexema);
         }
     } while (ch != EOF);
     fclose(file);
-    // char ch = ')';
-    // printf("%d\n", is_sinal_pontuacao(&ch));
 }
