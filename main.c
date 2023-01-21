@@ -119,7 +119,7 @@ tupla_token_t analex(char ch, FILE *file) {
                 return build_token(NUM_INT, lexema);
             }
         }
-        return build_token(error, lexema);
+        return build_token_with_error(error, lexema);
     } else if (is_operador_simples(parse_char_to_string(ch)) != -1) {
         char *lexema = malloc(sizeof(char));
         if(lexema == NULL){
