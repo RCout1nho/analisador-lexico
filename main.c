@@ -15,6 +15,8 @@
 #include "./lib/token/token.h"
 #include "./lib/utils/utils.h"
 
+#define MEMORY_ERROR "Erro ao alocar memoria"
+
 char prox_char(FILE *file) { return fgetc(file); }
 
 void grava_token_beautify(const char *tipo, char *lexema, bool error) {
@@ -53,6 +55,10 @@ tupla_token_t analex(char ch, FILE *file) {
     }
     if (is_identifier(ch)) {
         char *lexema = malloc(sizeof(char));
+        if(lexema == NULL){
+            printf(MEMORY_ERROR);
+            exit(1);
+        }
         int i = 0;
         do {
             lexema[i++] = ch;
@@ -71,10 +77,18 @@ tupla_token_t analex(char ch, FILE *file) {
         return build_token(get_palavra_reservada(index).tipo, lexema);
     } else if (isdigit(ch)) {
         char *lexema = malloc(sizeof(char));
+        if(lexema == NULL){
+            printf(MEMORY_ERROR);
+            exit(1);
+        }
         int i = 0;
         bool is_float = false;
         bool is_valid = true;
         char *error = malloc(sizeof(char) * 100);
+        if(error == NULL){
+            printf(MEMORY_ERROR);
+            exit(1);
+        }
 
         do {
             lexema[i++] = ch;
@@ -108,6 +122,10 @@ tupla_token_t analex(char ch, FILE *file) {
         return build_token(error, lexema);
     } else if (is_operador_simples(parse_char_to_string(ch)) != -1) {
         char *lexema = malloc(sizeof(char));
+        if(lexema == NULL){
+            printf(MEMORY_ERROR);
+            exit(1);
+        }
         int i = 0;
         bool is_simple_line_comment = false;
         bool is_block_comment = false;
@@ -170,6 +188,10 @@ tupla_token_t analex(char ch, FILE *file) {
         return build_token_with_error(ERROR_INVALID_OPERAND, lexema);
     } else if (ch == '\'') {
         char *lexema = malloc(sizeof(char));
+        if(lexema == NULL){
+            printf(MEMORY_ERROR);
+            exit(1);
+        }
         int i = 0;
         bool tem_par = false;
         do {
@@ -190,8 +212,11 @@ tupla_token_t analex(char ch, FILE *file) {
         }
         return build_token_with_error(ERROR_TOO_LONG_CHAR, lexema);
     } else if (ch == '"') {
-        // reconhece string
         char *lexema = malloc(sizeof(char));
+        if(lexema == NULL){
+            printf(MEMORY_ERROR);
+            exit(1);
+        }
         int i = 0;
         bool tem_par = false;
         do {
@@ -209,7 +234,12 @@ tupla_token_t analex(char ch, FILE *file) {
         return build_token(STRING, lexema);
     } else if (is_sinal_pontuacao(parse_char_to_string(ch)) != -1) {
         char *lexema = malloc(sizeof(char));
+        if(lexema == NULL){
+            printf(MEMORY_ERROR);
+            exit(1);
+        }
         lexema[0] = ch;
+        lexema[1] = '\0';
         return build_token(get_sinal_pontuacao(is_sinal_pontuacao(lexema)).tipo, lexema);
     }
 

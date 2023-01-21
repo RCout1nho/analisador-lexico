@@ -32,10 +32,3 @@
 Os tokens são agrupados de forma `ordenada` em `tuplas` estruturadas por um vetor de structs do tipo `token`.
 
 Para encontrar um elemento nesse vetor de tuplas, é utilizado `busca binária` para garantir um desempenho superior à uma `busca sequencial` simples.
-
----
-
-## O que falta?
-
-- validar erros nos identificadores
-- validar errors nos numeros
